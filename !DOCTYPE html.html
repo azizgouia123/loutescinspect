@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Préventive - Lou-Tec</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        h2 {
+            color: #004a99;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            color: #004a99;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background: #004a99;
+            color: white;
+        }
+
+        .photo-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #004a99;
+            border-radius: 5px;
+        }
+
+        .photo-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .photo-preview img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 2px solid #004a99;
+        }
+
+        button {
+            background: #004a99;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #003366;
+        }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #etatValue {
+            font-weight: bold;
+            color: #004a99;
+        }
+
+        #dropboxLink {
+            display: none;
+            margin-top: 15px;
+            color: #004a99;
+            text-decoration: underline;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="logo.png" alt="Lou-Tec">
+        </div>
+        <h2>Formulaire d'Inspection Préventive</h2>
+
+        <form id="inspectionForm">
+            <!-- Section Informations -->
+            <div class="form-section">
+                <label>Numéro d'équipement: <span class="error" id="error-numero">*</span></label>
+                <input type="text" name="numero_equipement" required>
+
+                <label>Modèle: <span class="error" id="error-modele">*</span></label>
+                <input type="text" name="modele" required>
+
+                <label>Emplacement: <span class="error" id="error-emplacement">*</span></label>
+                <input type="text" name="emplacement" required>
+
+                <label>État général (0 à 10):</label>
+                <div class="range-container">
+                    <input type="range" name="etat_general" min="0" max="10" value="5" 
+                           oninput="document.getElementById('etatValue').textContent = this.value">
+                    <span id="etatValue">5</span>/10
+                </div>
+
+                <label>Date de l'inspection: <span class="error" id="error-date">*</span></label>
+                <input type="date" name="date" required>
+            </div>
+
+            <!-- Tableau de Conformité -->
+            <table>
+                <tr>
+                    <th>Critères</th>
+                    <th>Conforme</th>
+                    <th>Non Conforme</th>
+                </tr>
+                <tr>
+                    <td>Fonctionnement</td>
+                    <td><input type="radio" name="fonctionnement" value="conforme" required></td>
+                    <td><input type="radio" name="fonctionnement" value="non_conforme" required></td>
+                </tr>
+                <tr>
+                    <td>Présence de Fuite</td>
+                    <td><input type="radio" name="fuite" value="conforme" required></td>
+                    <td><input type="radio" name="fuite" value="non_conforme" required></td>
+                </tr>
+                <tr>
+                    <td>Garde Corps</td>
+                    <td><input type="radio" name="garde_corps" value="conforme" required></td>
+                    <td><input type="radio" name="garde_corps" value="non_conforme" required></td>
+                </tr>
+                <tr>
+                    <td>Pneu</td>
+                    <td><input type="radio" name="pneu" value="conforme" required></td>
+                    <td><input type="radio" name="pneu" value="non_conforme" required></td>
+                </tr>
+                <tr>
+                    <td>Contenu Porte Document</td>
+                    <td><input type="radio" name="document" value="conforme" required></td>
+                    <td><input type="radio" name="document" value="non_conforme" required></td>
+                </tr>
+                <tr>
+                    <td>Inspection à jour</td>
+                    <td><input type="radio" name="inspection" value="conforme" required></td>
+                    <td><input type="radio" name="inspection" value="non_conforme" required></td>
+                </tr>
+                <tr>
+                    <td>Maintenance à jour</td>
+                    <td><input type="radio" name="maintenance" value="conforme" required></td>
+                    <td><input type="radio" name="maintenance" value="non_conforme" required></td>
+                </tr>
+            </table>
+
+            <!-- Section Photos -->
+            <div class="photo-section">
+                <label>Photos (maximum 5):</label>
+                <div class="photo-preview" id="photoPreview"></div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" onclick="capturePhoto()">📸 Prendre une photo</button>
+                    <label style="cursor: pointer;">
+                        <input type="file" id="fileInput" accept="image/*" multiple 
+                               style="display: none;" onchange="handleFileSelect(event)">
+                        📤 Importer des photos
+                    </label>
+                </div>
+            </div>
+
+            <!-- Observations -->
+            <label>Observations:</label>
+            <textarea name="explication" rows="4"></textarea>
+
+            <!-- Boutons -->
+            <button type="button" onclick="validateForm()">📄 Générer le rapport PDF</button>
+            <a href="https://www.dropbox.com/request/J2S4eMpAhSUpZPIQOVmE" 
+               id="dropboxLink" 
+               target="_blank"
+               rel="noopener noreferrer"
+               style="display: none;">
+               📤 Envoyer sur Dropbox
+            </a>
+        </form>
+    </div>
+
+    <script>
+        'use strict';
+        
+        // Variables globales
+        let photos = [];
+        const MAX_PHOTOS = 5;
+
+        // Fonction de validation
+        function validateForm() {
+            let isValid = true;
+            const form = document.getElementById('inspectionForm');
+
+            // Validation des champs texte
+            const requiredFields = ['numero_equipement', 'modele', 'emplacement', 'date'];
+            requiredFields.forEach(field => {
+                const input = form.querySelector(`[name="${field}"]`);
+                const error = document.getElementById(`error-${field.split('_')[0]}`);
+                if (!input.value.trim()) {
+                    error.style.display = 'inline';
+                    isValid = false;
+                } else {
+                    error.style.display = 'none';
+                }
+            });
+
+            // Validation des radio buttons
+            const radioGroups = ['fonctionnement', 'fuite', 'garde_corps', 'pneu', 'document', 'inspection', 'maintenance'];
+            radioGroups.forEach(group => {
+                const radios = form.querySelectorAll(`[name="${group}"]`);
+                if (![...radios].some(radio => radio.checked)) {
+                    isValid = false;
+                    alert(`Veuillez sélectionner une option pour: ${group.replace('_', ' ')}`);
+                }
+            });
+
+            if (isValid) genererPDF();
+        }
+
+        // Génération PDF
+        async function genererPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Configuration
+                const margin = 15;
+                let yPos = margin;
+
+                // Logo
+                try {
+                    const logo = await loadImage('logo.png');
+                    doc.addImage(logo, 'PNG', margin, yPos, 40, 20);
+                } catch {
+                    console.warn("Logo non trouvé");
+                }
+
+                // En-tête
+                doc.setFontSize(18);
+                doc.setTextColor(0, 74, 153);
+                doc.text("Rapport d'Inspection Préventive", margin + 45, yPos + 15);
+                yPos += 40;
+
+                // Informations de base
+                const formData = {
+                    numero: document.querySelector('[name="numero_equipement"]').value,
+                    modele: document.querySelector('[name="modele"]').value,
+                    emplacement: document.querySelector('[name="emplacement"]').value,
+                    etat: document.querySelector('[name="etat_general"]').value + "/10",
+                    date: document.querySelector('[name="date"]').value
+                };
+
+                doc.setFontSize(12);
+                doc.text(`Numéro d'équipement: ${formData.numero}`, margin, yPos);
+                doc.text(`Modèle: ${formData.modele}`, margin + 90, yPos);
+                yPos += 10;
+                doc.text(`Emplacement: ${formData.emplacement}`, margin, yPos);
+                doc.text(`État général: ${formData.etat}`, margin + 90, yPos);
+                yPos += 10;
+                doc.text(`Date inspection: ${formData.date}`, margin, yPos);
+                yPos += 20;
+
+                // Tableau de conformité
+                const rows = Array.from(document.querySelectorAll('table tr:not(:first-child)')).map(tr => {
+                    const tds = tr.querySelectorAll('td');
+                    return [
+                        tds[0].innerText,
+                        tds[1].querySelector('input:checked') ? '✓' : '✗',
+                        tds[2].querySelector('input:checked') ? '✗' : '✓'
+                    ];
+                });
+
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['Critère', 'Conforme', 'Non conforme']],
+                    body: rows,
+                    theme: 'grid',
+                    styles: { fontSize: 10 },
+                    headStyles: { 
+                        fillColor: [0, 74, 153],
+                        textColor: 255
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 100 },
+                        1: { cellWidth: 30 },
+                        2: { cellWidth: 30 }
+                    }
+                });
+                yPos = doc.lastAutoTable.finalY + 15;
+
+                // Observations
+                doc.setFontSize(12);
+                doc.setTextColor(0, 74, 153);
+                doc.text("Observations:", margin, yPos);
+                yPos += 10;
+                doc.setFontSize(10);
+                doc.setTextColor(0);
+                const observations = doc.splitTextToSize(
+                    document.querySelector('[name="explication"]').value || 'Aucune observation', 
+                    180
+                );
+                doc.text(observations, margin, yPos);
+                yPos += observations.length * 6 + 20;
+
+                // Photos
+                if (photos.length > 0) {
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 74, 153);
+                    doc.text("Photos de l'inspection:", margin, yPos);
+                    yPos += 15;
+
+                    const imgWidth = 80;
+                    const imgHeight = 60;
+                    let xPos = margin;
+
+                    photos.forEach((photo, index) => {
+                        if (yPos + imgHeight > 280) {
+                            doc.addPage();
+                            yPos = margin;
+                            xPos = margin;
+                        }
+
+                        try {
+                            doc.addImage(photo, 'JPEG', xPos, yPos, imgWidth, imgHeight);
+                            xPos += imgWidth + 10;
+
+                            if (index % 2 === 1) {
+                                xPos = margin;
+                                yPos += imgHeight + 15;
+                            }
+                        } catch (error) {
+                            console.error("Erreur avec la photo", error);
+                        }
+                    });
+                }
+
+                // Finalisation
+                doc.save(`Inspection_${formData.numero}_${formData.date}.pdf`);
+                document.getElementById('dropboxLink').style.display = 'block';
+
+            } catch (error) {
+                console.error("Erreur:", error);
+                alert("Erreur lors de la génération: " + error.message);
+            }
+        }
+
+        // Gestion des photos
+        async function capturePhoto() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
+
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                
+                const photoData = canvas.toDataURL('image/jpeg', 0.8);
+                addPhoto(photoData);
+                
+                stream.getTracks().forEach(track => track.stop());
+            } catch (error) {
+                alert("Erreur d'accès à la caméra : " + error.message);
+            }
+        }
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            for (let i = 0; i < files.length; i++) {
+                if (photos.length >= MAX_PHOTOS) {
+                    alert(`Maximum ${MAX_PHOTOS} photos autorisées`);
+                    break;
+                }
+                const reader = new FileReader();
+                reader.onload = e => addPhoto(e.target.result);
+                reader.readAsDataURL(files[i]);
+            }
+        }
+
+        function addPhoto(dataUrl) {
+            if (photos.length >= MAX_PHOTOS) return;
+            photos.push(dataUrl);
+            updatePhotoPreview();
+        }
+
+        function updatePhotoPreview() {
+            const preview = document.getElementById('photoPreview');
+            preview.innerHTML = photos.map((photo, index) => `
+                <img src="${photo}" alt="Photo ${index + 1}">
+            `).join('');
+        }
+
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+    </script>
+</body>
+</html>
